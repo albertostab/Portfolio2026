@@ -70,7 +70,7 @@ export default function App() {
     activeCategory?.projects[0] ||
     null
 
-  const heroImage = activeProject?.cover || ''
+  const heroImage = activeProject?.hero || activeProject?.cover || ''
 
   return (
     <div className="site">
@@ -96,6 +96,9 @@ export default function App() {
                 className="heroBg"
                 src={heroImage}
                 alt={activeProject?.title || 'Featured project'}
+                loading="eager"
+                fetchPriority="high"
+                decoding="async"
                 initial={{ opacity: 0, scale: 1.04 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0 }}
@@ -222,6 +225,8 @@ export default function App() {
                           className="projectImage"
                           src={project.cover}
                           alt={project.title}
+                          loading="lazy"
+                          decoding="async"
                         />
                       </div>
 
@@ -289,6 +294,9 @@ export default function App() {
                         className="galleryImage"
                         src={image}
                         alt={`${activeProject.title} ${index + 1}`}
+                        loading={index === 0 ? 'eager' : 'lazy'}
+                        fetchPriority={index === 0 ? 'high' : 'auto'}
+                        decoding="async"
                       />
                     </motion.figure>
                   ))}
@@ -315,7 +323,13 @@ export default function App() {
 
           <div className="aboutLayout">
             <div className="aboutImageWrap">
-              <img className="aboutImage" src={profileImage} alt={profile.name} />
+              <img
+                className="aboutImage"
+                src={profileImage}
+                alt={profile.name}
+                loading="lazy"
+                decoding="async"
+              />
             </div>
 
             <div className="aboutContent">

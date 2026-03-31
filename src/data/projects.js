@@ -1,5 +1,15 @@
 const projectImages = import.meta.glob(
-  '../assets/projects/{archviz,automotive,cgi}/*/gallery/*.{png,jpg,jpeg,webp,avif,PNG,JPG,JPEG,WEBP,AVIF}',
+  '../assets/projects-optimized/{archviz,automotive,cgi}/*/gallery/*.{webp,avif,png,jpg,jpeg,WEBP,AVIF,PNG,JPG,JPEG}',
+  { eager: true, import: 'default' }
+)
+
+const projectCovers = import.meta.glob(
+  '../assets/projects-optimized/{archviz,automotive,cgi}/*/cover/*.{webp,avif,png,jpg,jpeg,WEBP,AVIF,PNG,JPG,JPEG}',
+  { eager: true, import: 'default' }
+)
+
+const projectHeroes = import.meta.glob(
+  '../assets/projects-optimized/{archviz,automotive,cgi}/*/hero/*.{webp,avif,png,jpg,jpeg,WEBP,AVIF,PNG,JPG,JPEG}',
   { eager: true, import: 'default' }
 )
 
@@ -56,6 +66,35 @@ function buildYoutubeThumbnail(videoId) {
   return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
 }
 
+function buildAssetMap(files, segmentName) {
+  const map = {}
+
+  for (const [path, src] of Object.entries(files)) {
+    const match = path.match(
+      new RegExp(
+        `projects-optimized\\/(archviz|automotive|cgi)\\/([^/]+)\\/${segmentName}\\/([^/]+)$`
+      )
+    )
+
+    if (!match) continue
+
+    const [, category, folderId] = match
+    const key = `${category}/${folderId}`
+
+    if (!map[key]) {
+      map[key] = []
+    }
+
+    map[key].push(src)
+  }
+
+  for (const key of Object.keys(map)) {
+    map[key].sort(naturalSort)
+  }
+
+  return map
+}
+
 function buildPortfolioCategories() {
   const grouped = {
     cgi: {},
@@ -65,7 +104,7 @@ function buildPortfolioCategories() {
 
   for (const [path, src] of Object.entries(projectImages)) {
     const match = path.match(
-      /projects\/(archviz|automotive|cgi)\/([^/]+)\/gallery\/([^/]+)$/
+      /projects-optimized\/(archviz|automotive|cgi)\/([^/]+)\/gallery\/([^/]+)$/
     )
 
     if (!match) continue
@@ -90,6 +129,9 @@ function buildPortfolioCategories() {
     }
   }
 
+  const coverMap = buildAssetMap(projectCovers, 'cover')
+  const heroMap = buildAssetMap(projectHeroes, 'hero')
+
   return ['cgi', 'automotive', 'archviz'].map((category) => {
     const projects = Object.entries(grouped[category])
       .sort((a, b) => naturalSort(a[0], b[0]))
@@ -101,7 +143,13 @@ function buildPortfolioCategories() {
         const youtubeId = YOUTUBE_VIDEOS[category]?.[folderId] || null
         const embedUrl = buildEmbedUrl(youtubeId)
         const youtubeThumbnail = buildYoutubeThumbnail(youtubeId)
-        const cover = sortedImages[0]?.src || youtubeThumbnail || ''
+
+        const key = `${category}/${folderId}`
+        const customCover = coverMap[key]?.[0] || ''
+        const customHero = heroMap[key]?.[0] || ''
+
+        const cover = customCover || sortedImages[0]?.src || youtubeThumbnail || ''
+        const hero = customHero || cover || youtubeThumbnail || ''
 
         return {
           id: `${category}-${folderId}`,
@@ -111,6 +159,7 @@ function buildPortfolioCategories() {
           categoryLabel: CATEGORY_LABELS[category],
           title: formatProjectTitle(category, folderId),
           cover,
+          hero,
           gallery: sortedImages.map((img) => img.src),
           count: sortedImages.length,
           youtubeId,
