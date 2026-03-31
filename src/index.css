@@ -1,0 +1,31 @@
+.thumbImage {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-radius: 18px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(255,255,255,0.08);
+  display: block;
+}
+
+.galleryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.galleryImage {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.08);
+  display: block;
+  background: rgba(255,255,255,0.04);
+}
+
+@media (max-width: 920px) {
+  .galleryGrid {
+    grid-template-columns: 1fr;
+  }
+}
