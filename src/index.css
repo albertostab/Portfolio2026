@@ -407,6 +407,7 @@ img {
 
 .activeProjectSection {
   padding-top: 72px;
+  scroll-margin-top: 110px;
 }
 
 .projectPreviewVideo {
@@ -653,5 +654,9 @@ img {
 
   .contactCard {
     padding: 22px;
+  }
+
+  .activeProjectSection {
+    scroll-margin-top: 120px;
   }
 }

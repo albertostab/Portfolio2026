@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import './index.css'
 import { portfolioCategories } from './data/projects'
@@ -44,6 +44,9 @@ export default function App() {
     return firstCategory?.projects[0]?.id || ''
   })
 
+  const activeProjectSectionRef = useRef(null)
+  const shouldScrollToProjectRef = useRef(false)
+
   useEffect(() => {
     const activeCategory = categories.find(
       (category) => category.id === activeCategoryId
@@ -71,6 +74,40 @@ export default function App() {
     null
 
   const heroImage = activeProject?.hero || activeProject?.cover || ''
+
+  function scrollToCurrentProject() {
+    if (typeof window === 'undefined') return
+    const section = activeProjectSectionRef.current
+    if (!section) return
+
+    window.setTimeout(() => {
+      section.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      })
+    }, 120)
+  }
+
+  function handleSelectCategory(category) {
+    if (!category || !category.projects.length) return
+
+    setActiveCategoryId(category.id)
+    setActiveProjectId(category.projects[0]?.id || '')
+  }
+
+  function handleSelectProject(projectId) {
+    if (!projectId) return
+
+    shouldScrollToProjectRef.current = true
+    setActiveProjectId(projectId)
+  }
+
+  useEffect(() => {
+    if (!activeProject || !shouldScrollToProjectRef.current) return
+
+    scrollToCurrentProject()
+    shouldScrollToProjectRef.current = false
+  }, [activeProject])
 
   return (
     <div className="site">
@@ -182,10 +219,7 @@ export default function App() {
                   key={category.id}
                   type="button"
                   className={isActive ? 'categoryTab isActive' : 'categoryTab'}
-                  onClick={() => {
-                    setActiveCategoryId(category.id)
-                    setActiveProjectId(category.projects[0]?.id || '')
-                  }}
+                  onClick={() => handleSelectCategory(category)}
                   disabled={isEmpty}
                 >
                   <span>{getDisplayLabel(category.id, category.label)}</span>
@@ -215,7 +249,7 @@ export default function App() {
                           ? 'projectCard isActive'
                           : 'projectCard'
                       }
-                      onClick={() => setActiveProjectId(project.id)}
+                      onClick={() => handleSelectProject(project.id)}
                       initial={{ opacity: 0, y: 18 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.06, duration: 0.35 }}
@@ -252,6 +286,7 @@ export default function App() {
         <AnimatePresence mode="wait">
           {activeProject && (
             <motion.section
+              ref={activeProjectSectionRef}
               key={activeProject.id}
               className="section activeProjectSection"
               id="active-project"
