@@ -625,14 +625,21 @@ img {
   color: var(--text);
 }
 
-.floatingDock {
+.floatingDockWrap {
   position: fixed;
-  left: 50%;
+  left: 0;
+  right: 0;
   bottom: 18px;
-  transform: translateX(-50%);
   z-index: 45;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.floatingDock {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   padding: 8px;
   border-radius: 999px;
@@ -640,6 +647,7 @@ img {
   border: 1px solid rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(16px);
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.24);
+  pointer-events: auto;
 }
 
 .floatingDockButton {
@@ -651,6 +659,7 @@ img {
   border-radius: 999px;
   color: var(--text);
   background: transparent;
+  line-height: 1;
   transition:
     background 0.2s ease,
     transform 0.2s ease;
@@ -662,7 +671,9 @@ img {
 }
 
 .floatingDockButtonIcon {
+  width: 42px;
   min-width: 42px;
+  height: 42px;
   padding: 0;
   font-size: 18px;
 }
@@ -853,8 +864,13 @@ img {
     scroll-margin-top: 120px;
   }
 
-  .floatingDock {
+  .floatingDockWrap {
     bottom: 12px;
+    padding: 0 12px;
+  }
+
+  .floatingDock {
+    max-width: calc(100vw - 24px);
     padding: 6px;
   }
 
@@ -864,7 +880,9 @@ img {
   }
 
   .floatingDockButtonIcon {
+    width: 40px;
     min-width: 40px;
+    height: 40px;
   }
 
   .lightboxBackdrop {

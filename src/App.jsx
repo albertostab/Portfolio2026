@@ -129,10 +129,7 @@ export default function App() {
     function handleDragStart(event) {
       if (
         event.target instanceof HTMLElement &&
-        (
-          event.target.tagName === 'IMG' ||
-          isProtectedTarget(event.target)
-        )
+        (event.target.tagName === 'IMG' || isProtectedTarget(event.target))
       ) {
         event.preventDefault()
       }
@@ -605,32 +602,33 @@ export default function App() {
 
       <AnimatePresence>
         {isDockVisible && (
-          <motion.div
-            className="floatingDock"
-            aria-label="Quick navigation"
-            initial={{ opacity: 0, y: 18, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 18, scale: 0.96 }}
-            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <button
-              type="button"
-              className="floatingDockButton"
-              onClick={scrollToProjects}
+          <div className="floatingDockWrap" aria-label="Quick navigation">
+            <motion.div
+              className="floatingDock"
+              initial={{ opacity: 0, y: 18, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 18, scale: 0.96 }}
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
             >
-              Projects
-            </button>
+              <button
+                type="button"
+                className="floatingDockButton"
+                onClick={scrollToProjects}
+              >
+                Projects
+              </button>
 
-            <button
-              type="button"
-              className="floatingDockButton floatingDockButtonIcon"
-              onClick={scrollToTop}
-              aria-label="Back to top"
-              title="Back to top"
-            >
-              ↑
-            </button>
-          </motion.div>
+              <button
+                type="button"
+                className="floatingDockButton floatingDockButtonIcon"
+                onClick={scrollToTop}
+                aria-label="Back to top"
+                title="Back to top"
+              >
+                ↑
+              </button>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
