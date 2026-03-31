@@ -59,29 +59,42 @@ button {
 img {
   display: block;
   max-width: 100%;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 #root {
   width: 100%;
 }
 
+.siteShell {
+  width: 100%;
+  overflow-x: clip;
+}
+
 .site {
   width: min(var(--max), calc(100% - 40px));
   margin: 0 auto;
-  padding-bottom: 56px;
+  padding-bottom: 110px;
 }
 
 .topbar {
   position: sticky;
   top: 0;
-  z-index: 30;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 22px 0;
+  z-index: 50;
+  width: 100%;
   backdrop-filter: blur(16px);
   background: rgba(7, 7, 10, 0.58);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.topbarInner {
+  width: min(var(--max), calc(100% - 40px));
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 0;
 }
 
 .brand {
@@ -133,6 +146,7 @@ img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  pointer-events: none;
 }
 
 .heroOverlay {
@@ -369,6 +383,7 @@ img {
   height: 100%;
   object-fit: cover;
   transition: transform 0.4s ease;
+  pointer-events: none;
 }
 
 .projectCard:hover .projectImage {
@@ -425,14 +440,9 @@ img {
 
 .projectUtilityBar {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 16px;
   margin-bottom: 20px;
-  padding: 16px 18px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 12px 2px;
 }
 
 .projectUtilityCount {
@@ -440,37 +450,17 @@ img {
   font-size: 14px;
 }
 
-.projectUtilityButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 42px;
-  padding: 0 16px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: var(--text);
-  transition:
-    transform 0.2s ease,
-    background 0.2s ease,
-    border-color 0.2s ease;
-}
-
-.projectUtilityButton:hover {
-  transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.09);
-  border-color: rgba(255, 255, 255, 0.18);
-}
-
 .galleryGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
-  align-items: start;
+  column-count: 2;
+  column-gap: 18px;
 }
 
 .galleryItem {
-  margin: 0;
+  display: inline-block;
+  width: 100%;
+  margin: 0 0 18px;
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
   border-radius: 24px;
   overflow: hidden;
   background: var(--surface);
@@ -489,9 +479,8 @@ img {
   width: 100%;
   height: auto;
   object-fit: contain;
-  transition:
-    transform 0.35s ease,
-    opacity 0.35s ease;
+  transition: transform 0.35s ease;
+  pointer-events: none;
 }
 
 .galleryMediaButton:hover .galleryImage {
@@ -515,6 +504,18 @@ img {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   backdrop-filter: blur(8px);
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+  pointer-events: none;
+}
+
+.galleryMediaButton:hover .galleryOpenBadge,
+.galleryMediaButton:focus-visible .galleryOpenBadge {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .aboutSection {
@@ -539,6 +540,7 @@ img {
   width: 100%;
   aspect-ratio: 4 / 5;
   object-fit: cover;
+  pointer-events: none;
 }
 
 .aboutContent {
@@ -623,39 +625,46 @@ img {
   color: var(--text);
 }
 
-.floatingActions {
+.floatingDock {
   position: fixed;
-  right: 20px;
-  bottom: 20px;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
   z-index: 45;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 999px;
+  background: rgba(7, 7, 10, 0.46);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.24);
 }
 
-.floatingActionButton {
+.floatingDockButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 104px;
-  min-height: 46px;
+  min-height: 42px;
   padding: 0 16px;
   border-radius: 999px;
-  background: rgba(7, 7, 10, 0.76);
-  border: 1px solid rgba(255, 255, 255, 0.12);
   color: var(--text);
-  backdrop-filter: blur(14px);
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.24);
+  background: transparent;
   transition:
-    transform 0.2s ease,
     background 0.2s ease,
-    border-color 0.2s ease;
+    transform 0.2s ease;
 }
 
-.floatingActionButton:hover {
+.floatingDockButton:hover {
   transform: translateY(-1px);
-  background: rgba(16, 16, 22, 0.88);
-  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.floatingDockButtonIcon {
+  min-width: 42px;
+  padding: 0;
+  font-size: 18px;
 }
 
 .lightboxBackdrop {
@@ -719,6 +728,7 @@ img {
   max-width: 100%;
   max-height: calc(100vh - 140px);
   object-fit: contain;
+  pointer-events: none;
 }
 
 .lightboxNavButton {
@@ -774,12 +784,15 @@ img {
 @media (max-width: 760px) {
   .site {
     width: min(var(--max), calc(100% - 24px));
+    padding-bottom: 96px;
   }
 
-  .topbar {
+  .topbarInner {
+    width: min(var(--max), calc(100% - 24px));
     flex-direction: column;
     align-items: flex-start;
     gap: 14px;
+    padding: 14px 0;
   }
 
   .nav {
@@ -815,9 +828,13 @@ img {
   }
 
   .projectGrid,
-  .aboutLayout,
-  .galleryGrid {
+  .aboutLayout {
     grid-template-columns: 1fr;
+  }
+
+  .galleryGrid {
+    column-count: 1;
+    column-gap: 0;
   }
 
   .section {
@@ -828,11 +845,6 @@ img {
     border-radius: 20px;
   }
 
-  .projectUtilityBar {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
   .contactCard {
     padding: 22px;
   }
@@ -841,14 +853,18 @@ img {
     scroll-margin-top: 120px;
   }
 
-  .floatingActions {
-    right: 12px;
+  .floatingDock {
     bottom: 12px;
+    padding: 6px;
   }
 
-  .floatingActionButton {
-    min-width: 92px;
-    min-height: 42px;
+  .floatingDockButton {
+    min-height: 40px;
+    padding: 0 14px;
+  }
+
+  .floatingDockButtonIcon {
+    min-width: 40px;
   }
 
   .lightboxBackdrop {
