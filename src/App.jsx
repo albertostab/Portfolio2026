@@ -44,6 +44,9 @@ export default function App() {
     return firstCategory?.projects[0]?.id || ''
   })
 
+  const [lightboxIndex, setLightboxIndex] = useState(null)
+
+  const projectsSectionRef = useRef(null)
   const activeProjectSectionRef = useRef(null)
   const shouldScrollToProjectRef = useRef(false)
 
@@ -73,7 +76,15 @@ export default function App() {
     activeCategory?.projects[0] ||
     null
 
+  const galleryImages =
+    activeProject && !activeProject.isVideoProject ? activeProject.gallery : []
+
   const heroImage = activeProject?.hero || activeProject?.cover || ''
+  const isLightboxOpen = lightboxIndex !== null
+  const lightboxImage =
+    lightboxIndex !== null && galleryImages[lightboxIndex]
+      ? galleryImages[lightboxIndex]
+      : null
 
   function scrollToCurrentProject() {
     if (typeof window === 'undefined') return
@@ -88,6 +99,26 @@ export default function App() {
     }, 120)
   }
 
+  function scrollToProjects() {
+    if (typeof window === 'undefined') return
+    const section = projectsSectionRef.current
+    if (!section) return
+
+    section.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    })
+  }
+
+  function scrollToTop() {
+    if (typeof window === 'undefined') return
+
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    })
+  }
+
   function handleSelectCategory(category) {
     if (!category || !category.projects.length) return
 
@@ -98,8 +129,40 @@ export default function App() {
   function handleSelectProject(projectId) {
     if (!projectId) return
 
+    if (projectId === activeProjectId) {
+      scrollToCurrentProject()
+      return
+    }
+
     shouldScrollToProjectRef.current = true
     setActiveProjectId(projectId)
+  }
+
+  function openLightbox(index) {
+    if (!galleryImages.length) return
+    setLightboxIndex(index)
+  }
+
+  function closeLightbox() {
+    setLightboxIndex(null)
+  }
+
+  function showPrevImage() {
+    if (!galleryImages.length) return
+
+    setLightboxIndex((currentIndex) => {
+      if (currentIndex === null) return 0
+      return (currentIndex - 1 + galleryImages.length) % galleryImages.length
+    })
+  }
+
+  function showNextImage() {
+    if (!galleryImages.length) return
+
+    setLightboxIndex((currentIndex) => {
+      if (currentIndex === null) return 0
+      return (currentIndex + 1) % galleryImages.length
+    })
   }
 
   useEffect(() => {
@@ -108,6 +171,30 @@ export default function App() {
     scrollToCurrentProject()
     shouldScrollToProjectRef.current = false
   }, [activeProject])
+
+  useEffect(() => {
+    closeLightbox()
+  }, [activeProject?.id])
+
+  useEffect(() => {
+    if (!isLightboxOpen) return
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') closeLightbox()
+      if (event.key === 'ArrowLeft') showPrevImage()
+      if (event.key === 'ArrowRight') showNextImage()
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isLightboxOpen, galleryImages.length])
 
   return (
     <div className="site">
@@ -195,6 +282,7 @@ export default function App() {
         </section>
 
         <motion.section
+          ref={projectsSectionRef}
           className="section"
           id="projects"
           variants={fadeUp}
@@ -314,28 +402,50 @@ export default function App() {
                   />
                 </div>
               ) : (
-                <div className="galleryGrid">
-                  {activeProject.gallery.map((image, index) => (
-                    <motion.figure
-                      className={
-                        index === 0 ? 'galleryItem galleryItemLarge' : 'galleryItem'
-                      }
-                      key={`${activeProject.id}-${index}`}
-                      initial={{ opacity: 0, y: 18 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.04, duration: 0.35 }}
+                <>
+                  <div className="projectUtilityBar">
+                    <span className="projectUtilityCount">
+                      {galleryImages.length} {galleryImages.length === 1 ? 'image' : 'images'}
+                    </span>
+
+                    <button
+                      type="button"
+                      className="projectUtilityButton"
+                      onClick={() => openLightbox(0)}
                     >
-                      <img
-                        className="galleryImage"
-                        src={image}
-                        alt={`${activeProject.title} ${index + 1}`}
-                        loading={index === 0 ? 'eager' : 'lazy'}
-                        fetchPriority={index === 0 ? 'high' : 'auto'}
-                        decoding="async"
-                      />
-                    </motion.figure>
-                  ))}
-                </div>
+                      Open fullscreen
+                    </button>
+                  </div>
+
+                  <div className="galleryGrid">
+                    {galleryImages.map((image, index) => (
+                      <motion.figure
+                        className="galleryItem"
+                        key={`${activeProject.id}-${index}`}
+                        initial={{ opacity: 0, y: 18 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.04, duration: 0.35 }}
+                      >
+                        <button
+                          type="button"
+                          className="galleryMediaButton"
+                          onClick={() => openLightbox(index)}
+                          aria-label={`Open ${activeProject.title} image ${index + 1}`}
+                        >
+                          <img
+                            className="galleryImage"
+                            src={image}
+                            alt={`${activeProject.title} ${index + 1}`}
+                            loading={index <= 1 ? 'eager' : 'lazy'}
+                            fetchPriority={index === 0 ? 'high' : 'auto'}
+                            decoding="async"
+                          />
+                          <span className="galleryOpenBadge">Open</span>
+                        </button>
+                      </motion.figure>
+                    ))}
+                  </div>
+                </>
               )}
             </motion.section>
           )}
@@ -404,6 +514,90 @@ export default function App() {
           </div>
         </motion.section>
       </main>
+
+      <div className="floatingActions">
+        <button
+          type="button"
+          className="floatingActionButton"
+          onClick={scrollToProjects}
+        >
+          Projects
+        </button>
+
+        <button
+          type="button"
+          className="floatingActionButton"
+          onClick={scrollToTop}
+        >
+          Top
+        </button>
+      </div>
+
+      <AnimatePresence>
+        {isLightboxOpen && lightboxImage && (
+          <motion.div
+            className="lightboxBackdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={closeLightbox}
+          >
+            <motion.div
+              className="lightboxDialog"
+              initial={{ opacity: 0, scale: 0.98, y: 12 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.98, y: 12 }}
+              transition={{ duration: 0.22 }}
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="lightboxTopbar">
+                <span className="lightboxCounter">
+                  {lightboxIndex + 1} / {galleryImages.length}
+                </span>
+
+                <button
+                  type="button"
+                  className="lightboxCloseButton"
+                  onClick={closeLightbox}
+                  aria-label="Close fullscreen view"
+                >
+                  Close
+                </button>
+              </div>
+
+              <div className="lightboxFrame">
+                {galleryImages.length > 1 && (
+                  <button
+                    type="button"
+                    className="lightboxNavButton isPrev"
+                    onClick={showPrevImage}
+                    aria-label="Previous image"
+                  >
+                    ‹
+                  </button>
+                )}
+
+                <img
+                  className="lightboxImage"
+                  src={lightboxImage}
+                  alt={`${activeProject?.title || 'Project image'} ${lightboxIndex + 1}`}
+                />
+
+                {galleryImages.length > 1 && (
+                  <button
+                    type="button"
+                    className="lightboxNavButton isNext"
+                    onClick={showNextImage}
+                    aria-label="Next image"
+                  >
+                    ›
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
