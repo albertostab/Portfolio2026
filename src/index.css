@@ -420,6 +420,35 @@ img {
   scroll-margin-top: 110px;
 }
 
+.projectHeader {
+  margin-bottom: 26px;
+}
+
+.projectHeaderContent {
+  max-width: 860px;
+}
+
+.projectHeaderContent h2 {
+  margin: 0;
+}
+
+.projectSubmeta {
+  margin: 14px 0 0;
+  color: var(--muted-2);
+  font-size: 14px;
+  line-height: 1.7;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.projectIntro {
+  margin: 18px 0 0;
+  max-width: 820px;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.85;
+}
+
 .projectPreviewVideo {
   position: relative;
   width: 100%;
@@ -834,7 +863,8 @@ img {
   .heroLead,
   .sectionIntro,
   .aboutText,
-  .contactText {
+  .contactText,
+  .projectIntro {
     font-size: 16px;
   }
 
@@ -862,6 +892,10 @@ img {
 
   .activeProjectSection {
     scroll-margin-top: 120px;
+  }
+
+  .projectSubmeta {
+    font-size: 13px;
   }
 
   .floatingDockWrap {

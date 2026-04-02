@@ -16,6 +16,7 @@ const fadeUp = {
 
 function getDisplayLabel(categoryId, fallbackLabel = '') {
   if (categoryId === 'cgi') return 'Showreel'
+  if (categoryId === 'vr') return 'VR'
   if (categoryId === 'automotive') return 'Automotive'
   if (categoryId === 'archviz') return 'Archviz'
   return fallbackLabel
@@ -23,7 +24,7 @@ function getDisplayLabel(categoryId, fallbackLabel = '') {
 
 export default function App() {
   const categories = useMemo(() => {
-    const orderedIds = ['cgi', 'automotive', 'archviz']
+    const orderedIds = ['cgi', 'automotive', 'archviz', 'vr']
 
     return orderedIds
       .map((id) => portfolioCategories.find((category) => category.id === id))
@@ -447,7 +448,9 @@ export default function App() {
                             {getDisplayLabel(project.category, project.categoryLabel)}
                           </p>
                           <h3>{project.title}</h3>
-                          <p className="projectCount">{project.count} images</p>
+                          <p className="projectCount">
+                            {project.isVideoProject ? 'YouTube video' : `${project.count} images`}
+                          </p>
                         </div>
                       </motion.button>
                     ))
@@ -473,10 +476,24 @@ export default function App() {
                 exit={{ opacity: 0, y: -18 }}
                 transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
               >
-                <div className="sectionHead">
-                  <div>
+                <div className="sectionHead narrow projectHeader">
+                  <div className="projectHeaderContent">
                     <p className="sectionEyebrow">Current Project</p>
                     <h2>{activeProject.title}</h2>
+
+                    {(activeProject?.year || activeProject?.client) && (
+                      <p className="projectSubmeta">
+                        {activeProject?.year && <span>{activeProject.year}</span>}
+                        {activeProject?.year && activeProject?.client && (
+                          <span className="metaDot" aria-hidden="true">&bull;</span>
+                        )}
+                        {activeProject?.client && <span>{activeProject.client}</span>}
+                      </p>
+                    )}
+
+                    {activeProject?.description && (
+                      <p className="projectIntro">{activeProject.description}</p>
+                    )}
                   </div>
                 </div>
 

@@ -13,8 +13,14 @@ const projectHeroes = import.meta.glob(
   { eager: true, import: 'default' }
 )
 
+const vrMetaFiles = import.meta.glob(
+  '../assets/projects/vr/*/meta.json',
+  { eager: true, import: 'default' }
+)
+
 const CATEGORY_LABELS = {
   cgi: 'Showreel',
+  vr: 'VR',
   automotive: 'Automotive',
   archviz: 'Archviz',
 }
@@ -33,6 +39,7 @@ const TITLE_OVERRIDES = {
   },
   automotive: {},
   archviz: {},
+  vr: {},
 }
 
 function naturalSort(a, b) {
@@ -95,7 +102,7 @@ function buildAssetMap(files, segmentName) {
   return map
 }
 
-function buildPortfolioCategories() {
+function buildImageCategories() {
   const grouped = {
     cgi: {},
     automotive: {},
@@ -132,7 +139,9 @@ function buildPortfolioCategories() {
   const coverMap = buildAssetMap(projectCovers, 'cover')
   const heroMap = buildAssetMap(projectHeroes, 'hero')
 
-  return ['cgi', 'automotive', 'archviz'].map((category) => {
+  const categories = {}
+
+  for (const category of ['cgi', 'automotive', 'archviz']) {
     const projects = Object.entries(grouped[category])
       .sort((a, b) => naturalSort(a[0], b[0]))
       .map(([folderId, images]) => {
@@ -149,7 +158,7 @@ function buildPortfolioCategories() {
         const customHero = heroMap[key]?.[0] || ''
 
         const cover = customCover || sortedImages[0]?.src || youtubeThumbnail || ''
-        const hero = customHero || cover || youtubeThumbnail || ''
+        const hero = customHero || sortedImages[0]?.src || cover || youtubeThumbnail || ''
 
         return {
           id: `${category}-${folderId}`,
@@ -165,15 +174,86 @@ function buildPortfolioCategories() {
           youtubeId,
           embedUrl,
           isVideoProject: Boolean(embedUrl),
+          year: null,
+          client: '',
+          description: '',
         }
       })
 
-    return {
+    categories[category] = {
       id: category,
       label: CATEGORY_LABELS[category],
       projects,
     }
-  })
+  }
+
+  return categories
+}
+
+function buildVrCategory() {
+  const projects = Object.entries(vrMetaFiles)
+    .map(([path, meta]) => {
+      const match = path.match(/projects\/vr\/([^/]+)\/meta\.json$/)
+      if (!match) return null
+
+      const folderId = match[1]
+      const youtubeId = meta?.youtubeId || null
+      const title = meta?.title || formatProjectTitle('vr', folderId)
+      const order = Number.isFinite(meta?.order) ? meta.order : 999
+      const cover = buildYoutubeThumbnail(youtubeId)
+      const embedUrl = buildEmbedUrl(youtubeId)
+
+      return {
+        id: `vr-${folderId}`,
+        folderId,
+        slug: `vr-${folderId}`,
+        category: 'vr',
+        categoryLabel: CATEGORY_LABELS.vr,
+        title,
+        cover,
+        hero: cover,
+        gallery: [],
+        count: 0,
+        youtubeId,
+        embedUrl,
+        isVideoProject: Boolean(embedUrl),
+        order,
+        year: meta?.year ?? null,
+        client: meta?.client || '',
+        description: meta?.description || '',
+      }
+    })
+    .filter(Boolean)
+    .sort((a, b) => {
+      if (a.order !== b.order) return a.order - b.order
+      return naturalSort(a.folderId, b.folderId)
+    })
+
+  return {
+    id: 'vr',
+    label: CATEGORY_LABELS.vr,
+    projects,
+  }
+}
+
+function buildPortfolioCategories() {
+  const imageCategories = buildImageCategories()
+  const vrCategory = buildVrCategory()
+
+  return [
+    imageCategories.cgi || { id: 'cgi', label: CATEGORY_LABELS.cgi, projects: [] },
+    imageCategories.automotive || {
+      id: 'automotive',
+      label: CATEGORY_LABELS.automotive,
+      projects: [],
+    },
+    imageCategories.archviz || {
+      id: 'archviz',
+      label: CATEGORY_LABELS.archviz,
+      projects: [],
+    },
+    vrCategory,
+  ]
 }
 
 export const portfolioCategories = buildPortfolioCategories()
